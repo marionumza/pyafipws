@@ -18,6 +18,7 @@ import os
 import subprocess
 import warnings
 import sys
+import re
 
 try:
     rev = subprocess.check_output(
@@ -26,7 +27,15 @@ try:
 except:
     rev = 0
 
+# Generar la versión de forma dinámica y compatible con PEP 440
 __version__ = "%s.%s.%s" % (sys.version_info[0:2] + (rev,))
+# Reemplazar caracteres no válidos
+if "b" in __version__:
+    __version__ = __version__.replace("b", ".b")
+
+# Validar el formato de la versión
+if not re.match(r"^\d+(\.\d+)*(\.b\d+)?$", __version__):
+    raise ValueError("Invalid version format: %s" % __version__)
 
 HOMO = True
 
@@ -42,7 +51,7 @@ kwargs["packages"] = ["pyafipws", "pyafipws.formatos"]
 opts = {}
 data_files = [("pyafipws/plantillas", glob.glob("plantillas/*"))]
 
-# convert the README and format in restructured text (only when registering)
+# Convertir README y formatearlo como reStructuredText (solo al registrar)
 # from docs https://packaging.python.org/en/latest/guides/making-a-pypi-friendly-readme/
 parent_dir = os.getcwd()
 long_desc = open(os.path.join(parent_dir, "README.md")).read()
@@ -96,3 +105,4 @@ setup(
     keywords="webservice electronic invoice pdf traceability",
     **kwargs
 )
+
